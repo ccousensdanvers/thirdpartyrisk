@@ -1,0 +1,46 @@
+
+name: Deploy Cloudflare Worker
+
+on:
+  push:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i -D wrangler
+
+      # Set secrets non-interactively
+      - name: Configure staging secret
+        if: github.ref != 'refs/heads/main'
+        run: echo "${{ secrets.UPGUARD_API_KEY_STAGING }}" | npx wrangler secret put UPGUARD_API_KEY --env staging --ci
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Configure production secret
+        if: github.ref == 'refs/heads/main'
+        run: echo "${{ secrets.UPGUARD_API_KEY_PROD }}" | npx wrangler secret put UPGUARD_API_KEY --env production --ci
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Deploy to staging
+        if: github.ref != 'refs/heads/main'
+        run: npx wrangler deploy --env staging
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Deploy to production
+        if: github.ref == 'refs/heads/main'
+        run: npx wrangler deploy --env production
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

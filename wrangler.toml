@@ -1,0 +1,15 @@
+
+name = "upguard-report"
+main = "src/index.js"
+compatibility_date = "2025-09-06"
+
+[vars]
+REQUIRE_ACCESS = "0"
+
+[env.staging]
+[env.staging.vars]
+REQUIRE_ACCESS = "1"
+
+[env.production]
+[env.production.vars]
+REQUIRE_ACCESS = "1"
