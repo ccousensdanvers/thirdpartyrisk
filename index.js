@@ -152,7 +152,7 @@ function renderPage() {
 
     async function launch(domain, btn) {
       const email = document.getElementById('email').value.trim();
-      btn.disabled = true; out.textContent = `Queuing report for ${domain}...`;
+      btn.disabled = true; out.textContent = 'Queuing report for ' + domain + '...';
       try {
         const qs = new URLSearchParams({ vendor: domain, type: 'VendorDetailedPDF' });
         if (email) qs.set('email', email);
@@ -160,23 +160,25 @@ function renderPage() {
         const data = await res.json();
 
         if (data.status === 'completed' && data.download_url) {
-          out.innerHTML = `Report ready for <strong>${domain}</strong>: <a href="${data.download_url}" target="_blank" rel="noopener">Download PDF</a>`;
+          out.innerHTML = 'Report ready for <strong>' + domain + '</strong>: ' +
+                          '<a href="' + data.download_url + '" target="_blank" rel="noopener">Download PDF</a>';
           btn.disabled = false; return;
         }
 
         const id = data.queued_report_id;
-        out.textContent = `Queued (id=${id}). Waiting for completion...`;
+        out.textContent = 'Queued (id=' + id + '). Waiting for completion...';
         const start = Date.now();
         const timer = setInterval(async () => {
           const r = await fetch('/api/status?id=' + encodeURIComponent(id));
           const body = await r.json();
           if (body.status === 'completed' && body.download_url) {
             clearInterval(timer);
-            out.innerHTML = `Report ready for <strong>${domain}</strong>: <a href="${body.download_url}" target="_blank" rel="noopener">Download PDF</a>`;
+            out.innerHTML = 'Report ready for <strong>' + domain + '</strong>: ' +
+                            '<a href="' + body.download_url + '" target="_blank" rel="noopener">Download PDF</a>';
             btn.disabled = false;
           } else {
             const secs = Math.floor((Date.now() - start) / 1000);
-            out.textContent = `Still building for ${domain}... (${secs}s)`;
+            out.textContent = 'Still building for ' + domain + '... (' + secs + 's)';
           }
         }, 2000);
       } catch (e) {
@@ -189,3 +191,4 @@ function renderPage() {
 </html>`;
   return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
+
