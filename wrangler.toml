@@ -1,6 +1,6 @@
 
 name = "upguard-report"
-main = "src/index.js"
+main = "index.js"
 compatibility_date = "2025-09-06"
 
 [vars]
